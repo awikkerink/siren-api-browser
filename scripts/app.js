@@ -60,7 +60,7 @@ angular
 
         if (field.type === 'radio' || field.type === 'checkbox') {
           angular.forEach(field.value, function(val, key) {
-            model = (field.type === 'radio') ? 'action.fields[' + i + '].value' : 'action.fields[' + i + '].value['+ key +']';
+            model = (field.type === 'radio') ? 'action.fields[' + i + '].value' : 'action.fields[' + i + '].value['+ key +'].selected';
             var input = $('<input>')
               .attr('name', field.name)
               .attr('id', scope.action.name + field.name + val.value)
@@ -80,6 +80,13 @@ angular
             controls.append(label);
             controls.append($('<br>'));
           });
+          if (field.type === 'radio') {
+            angular.forEach(field.value, function(val) {
+              if (val.selected) {
+                field.value = val.value;
+              }
+            });
+          }
         } else {
           var input = $('<input>')
             .attr('name', field.name)

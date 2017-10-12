@@ -12,7 +12,7 @@ angular
         map[c] = { known: true, state: state };
         return this;
       };
-      
+
       this.otherwise = function(state) {
         map[null] = { known: false, state: state };
       };
@@ -64,15 +64,15 @@ angular
           if (!immediateReturn || (redirectIfKnown && state.known)) {
             self.cache.push(self.current);
           }
-          
+
           $rootScope.$broadcast('entityChangeSuccess', data);
 
           $state.transitionTo(state.state, params);
 
           var stateIsUnknown = !state.known;
           var resolveIfKnown = !redirectIfKnown;
-          
-          
+
+
           if (immediateReturn && (stateIsUnknown || resolveIfKnown)) {
             deferred.resolve(data);
           }
@@ -106,12 +106,27 @@ angular
             var str = [];
             for(var p in obj)
               if (obj.hasOwnProperty(p)) {
-                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                if (obj[p] && typeof obj[p] === 'object' && typeof obj[p].length === 'number') {
+                  angular.forEach(obj[p], function(value) {
+                    if (!value) {
+                      return;
+                    }
+                    if (typeof value === 'object') {
+                      if (!value.selected) {
+                        return;
+                      }
+                      value = value.value;
+                    }
+                    data.push(encodeURIComponent(p) + '=' + encodeURIComponent(value));
+                  });
+                } else {
+                  str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                }
               }
             return str.join("&");
           };
 
-          url = url.split('?')[0] + '?' + serialize(params); 
+          url = url.split('?')[0] + '?' + serialize(params);
 
           $state.transitionTo('entity', { url: url });
 
@@ -129,7 +144,22 @@ angular
           } else if (contentType === 'application/x-www-form-urlencoded') {
             var data = [];
             angular.forEach(action.fields, function(field) {
-              data.push(encodeURIComponent(field.name) + '=' + encodeURIComponent(field.value));
+              if (field.value && typeof field.value === 'object' && typeof field.value.length === 'number') {
+                angular.forEach(field.value, function(value) {
+                  if (!value) {
+                    return;
+                  }
+                  if (typeof value === 'object') {
+                    if (!value.selected) {
+                      return;
+                    }
+                    value = value.value;
+                  }
+                  data.push(encodeURIComponent(field.name) + '=' + encodeURIComponent(value));
+                });
+              } else {
+                data.push(encodeURIComponent(field.name) + '=' + encodeURIComponent(field.value));
+              }
             });
 
             options.data = data.join('&');
